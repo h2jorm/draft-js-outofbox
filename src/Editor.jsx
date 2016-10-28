@@ -1,7 +1,15 @@
 import React, {PropTypes} from 'react';
-import {Editor, EditorState, RichUtils} from 'draft-js';
-import {stateToHTML} from 'draft-js-export-html';
-import {stateFromHTML} from 'draft-js-import-html';
+import {
+  ContentState,
+  Editor,
+  EditorState,
+  DraftEntityInstance,
+  RichUtils,
+  convertFromHTML,
+} from '../Draft/Draft';
+import decorator from './decorator';
+// import blockRenderMap from './blockRenderMap';
+// import blockRenderer from './blockRenderer';
 
 import StyleControls from './StyleControls';
 
@@ -13,9 +21,17 @@ const RichEditor = React.createClass({
 
   getInitialState() {
     const {defaultHTML = ''} = this.props;
+    let {contentBlocks, entityMap} = convertFromHTML(
+      defaultHTML,
+    );
+    const contentState = ContentState.createFromBlockArray(
+      contentBlocks,
+      entityMap,
+    );
     return {
       editorState: EditorState.createWithContent(
-        stateFromHTML(defaultHTML)
+        contentState,
+        decorator,
       ),
     };
   },
@@ -26,7 +42,16 @@ const RichEditor = React.createClass({
 
   handleChange(editorState) {
     this.setState({editorState});
-    this.props.onChange(stateToHTML(editorState.getCurrentContent()));
+    // this.props.onChange(stateToHTML(editorState.getCurrentContent()));
+  },
+
+  handleKeyCommand(command) {
+    const newState = RichUtils.handleKeyCommand(this.state.editorState, command);
+    if (newState) {
+      this.handleChange(newState);
+      return 'handled';
+    }
+    return 'not-handled';
   },
 
   toggleBlockType(blockType) {
@@ -77,6 +102,7 @@ const RichEditor = React.createClass({
         <Editor
           ref="editor"
           editorState={editorState}
+          handleKeyCommand={this.handleKeyCommand}
           onChange={this.handleChange}
         />
       </div>

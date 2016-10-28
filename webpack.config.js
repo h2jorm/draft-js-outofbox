@@ -14,9 +14,7 @@ module.exports = {
       'react',
       'react-dom',
       'immutable',
-      'draft-js',
-      'draft-js-export-html',
-      'draft-js-import-html',
+      // 'draft-js',
     ],
   },
   output: {
