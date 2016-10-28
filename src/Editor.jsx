@@ -1,5 +1,6 @@
 import React, {PropTypes} from 'react';
 import {
+  AtomicBlockUtils,
   ContentState,
   Editor,
   EditorState,
@@ -24,6 +25,7 @@ const RichEditor = React.createClass({
     let {contentBlocks, entityMap} = convertFromHTML(
       defaultHTML,
     );
+    console.log(entityMap.toArray().map(a => a.toObject()));
     const contentState = ContentState.createFromBlockArray(
       contentBlocks,
       entityMap,
@@ -41,7 +43,9 @@ const RichEditor = React.createClass({
   },
 
   handleChange(editorState) {
-    this.setState({editorState});
+    this.setState({editorState}, () => {
+      setTimeout(this.focus, 0);
+    });
     // this.props.onChange(stateToHTML(editorState.getCurrentContent()));
   },
 
@@ -84,7 +88,82 @@ const RichEditor = React.createClass({
           editorState={editorState}
           onToggle={this.toggleInlineStyle}
         />
+        {
+          this.renderInsertImgBtn()
+        }
+        {
+          this.renderInsertLinkBtn()
+        }
       </div>
+    );
+  },
+
+  handleImgInsert() {
+    const {editorState} = this.state;
+    const contentState = editorState.getCurrentContent();
+    const contentStateWithEntity = contentState.createEntity(
+      'IMAGE',
+      'MUTABLE',
+      {
+        src: 'http://images.dtcj.com/DTCJ/6333c9fa9f073683d1d3853f2862d31cbb3925c8d863c4f1d33eedba5197118a.jpg',
+        height: '100px',
+      },
+    );
+
+    const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
+    const newEditorState = EditorState.set(editorState, { currentContent: contentStateWithEntity });
+    this.handleChange(AtomicBlockUtils.insertAtomicBlock(
+      newEditorState,
+      entityKey,
+      ' ',
+    ));
+  },
+
+  handleLinkInsert() {
+    const {editorState} = this.state;
+    const withLink = RichUtils.currentBlockContainsLink(editorState);
+    if (withLink)
+      this.removeLink();
+    else
+      this.addLink();
+  },
+
+  addLink() {
+    const {editorState} = this.state;
+    const contentState = editorState.getCurrentContent();
+    const contentStateWithEntity = contentState.createEntity(
+      'LINK',
+      'MUTABLE',
+      {url: 'http://www.google.com'}
+    );
+    const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
+    const newEditorState = EditorState.set(editorState, { currentContent: contentStateWithEntity });
+    this.handleChange(RichUtils.toggleLink(
+      newEditorState,
+      newEditorState.getSelection(),
+      entityKey,
+    ));
+  },
+
+  removeLink() {
+    const {editorState} = this.state;
+    const selection = editorState.getSelection();
+    if (!selection.isCollapsed()) {
+      this.handleChange(
+        RichUtils.toggleLink(editorState, selection, null),
+      );
+    }
+  },
+
+  renderInsertImgBtn() {
+    return (
+      <span onClick={this.handleImgInsert}>插入图片</span>
+    );
+  },
+
+  renderInsertLinkBtn() {
+    return (
+      <span onClick={this.handleLinkInsert}>插入链接</span>
     );
   },
 
