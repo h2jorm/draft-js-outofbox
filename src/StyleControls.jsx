@@ -1,4 +1,5 @@
 import React from 'react';
+import {Map} from 'immutable';
 
 const StyleControls = {};
 
@@ -23,60 +24,76 @@ const StyleButton = React.createClass({
   },
 });
 
-const BLOCK_TYPES = [
-  {label: '标题1', style: 'header-one'},
-  {label: '标题2', style: 'header-two'},
-  {label: '标题3', style: 'header-three'},
-  {label: '标题4', style: 'header-four'},
-  {label: '标题5', style: 'header-five'},
-  {label: '标题6', style: 'header-six'},
-  {label: '引用', style: 'blockquote'},
-  {label: '无序列表', style: 'unordered-list-item'},
-  {label: '有序列表', style: 'ordered-list-item'},
-];
+
+const BLOCK_TYPES = {
+  h1: {label: 'h1', style: 'header-one'},
+  h2: {label: 'h2', style: 'header-two'},
+  h3: {label: 'h3', style: 'header-three'},
+  h4: {label: 'h4', style: 'header-four'},
+  h5: {label: 'h5', style: 'header-five'},
+  h6: {label: 'h6', style: 'header-six'},
+  quote: {label: 'quote', style: 'blockquote'},
+  ul: {label: 'ul', style: 'unordered-list-item'},
+  ol: {label: 'ol', style: 'ordered-list-item'},
+};
 
 StyleControls.Block = (props) => {
-  const {editorState} = props;
+  const {editorState, require = []} = props;
   const selection = editorState.getSelection();
   const blockType = editorState
-    .getCurrentContent()
-    .getBlockForKey(selection.getStartKey())
-    .getType();
+  .getCurrentContent()
+  .getBlockForKey(selection.getStartKey())
+  .getType();
 
   return (
     <div className="richeditor-controls">
-      {BLOCK_TYPES.map((type) =>
-        <StyleButton
-          key={type.label}
-          active={type.style === blockType}
-          label={type.label}
-          onToggle={props.onToggle}
-          style={type.style}
-        />
-      )}
+      {
+        require.map(key => {
+          const type = BLOCK_TYPES[key];
+          if (!type)
+            return null;
+          return (
+            <StyleButton
+              key={type.label}
+              active={type.style === blockType}
+              label={type.label}
+              onToggle={props.onToggle}
+              style={type.style}
+            />
+          );
+        })
+      }
     </div>
   );
 };
 
-const INLINE_STYLES = [
-  {label: '粗体', style: 'BOLD'},
-  {label: '斜体', style: 'ITALIC'},
-  {label: '下划线', style: 'UNDERLINE'},
-];
+const INLINE_STYLES = {
+  b: {label: 'Bold', style: 'BOLD'},
+  i: {label: 'Italic', style: 'ITALIC'},
+  u: {label: 'Underline', style: 'UNDERLINE'},
+};
 
 StyleControls.Inline = (props) => {
-  var currentStyle = props.editorState.getCurrentInlineStyle();
+  const {editorState, require = []} = props;
+  var currentStyle = editorState.getCurrentInlineStyle();
   return (
     <div className="richeditor-controls">
-      {INLINE_STYLES.map(type =>
-        <StyleButton
-          key={type.label}
-          active={currentStyle.has(type.style)}
-          label={type.label}
-          onToggle={props.onToggle}
-          style={type.style}
-        />
-      )}
+      {
+        require.map(key => {
+          const type = INLINE_STYLES[key];
+          if (!type)
+            return null;
+          return (
+            <StyleButton
+              key={type.label}
+              active={currentStyle.has(type.style)}
+              label={type.label}
+              onToggle={props.onToggle}
+              style={type.style}
+            />
+          );
+        })
+      }
     </div>
   );
 };

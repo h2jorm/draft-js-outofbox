@@ -18,6 +18,15 @@ const RichEditor = React.createClass({
   propTypes: {
     onChange: PropTypes.func.isRequired,
     defaultHTML: PropTypes.string,
+    config: PropTypes.object.isRequired,
+  },
+
+  defaultProps: {
+    config: {
+      style: [],
+      plugins: {},
+    },
+    onChange: () => {},
   },
 
   getInitialState() {
@@ -78,35 +87,39 @@ const RichEditor = React.createClass({
 
   renderToolbar() {
     const {editorState} = this.state;
+    const {config: {style, plugins}} = this.props;
     return (
       <div className="richeditor-toolbar">
         <StyleControls.Block
           editorState={editorState}
           onToggle={this.toggleBlockType}
+          require={['h1', 'h2', 'h3', 'quote', 'ul', 'ol']}
         />
         <StyleControls.Inline
           editorState={editorState}
           onToggle={this.toggleInlineStyle}
+          require={['i', 'u']}
         />
         {
-          this.renderInsertImgBtn()
+          plugins.imgUpload ?
+          this.renderInsertImgBtn() : null
         }
         {
-          this.renderInsertLinkBtn()
+          plugins.toggleLink ?
+          this.renderInsertLinkBtn() : null
         }
       </div>
     );
   },
 
-  handleImgInsert() {
+  handleImgInsert(src) {
     const {editorState} = this.state;
     const contentState = editorState.getCurrentContent();
     const contentStateWithEntity = contentState.createEntity(
       'IMAGE',
       'MUTABLE',
       {
-        src: 'http://images.dtcj.com/DTCJ/6333c9fa9f073683d1d3853f2862d31cbb3925c8d863c4f1d33eedba5197118a.jpg',
-        height: '100px',
+        src,
       },
     );
 
@@ -119,22 +132,23 @@ const RichEditor = React.createClass({
     ));
   },
 
-  handleLinkInsert() {
+  handleLinkToggle(...args) {
     const {editorState} = this.state;
     const withLink = RichUtils.currentBlockContainsLink(editorState);
+    console.log(withLink);
     if (withLink)
       this.removeLink();
     else
-      this.addLink();
+      this.addLink(...args);
   },
 
-  addLink() {
+  addLink(url) {
     const {editorState} = this.state;
     const contentState = editorState.getCurrentContent();
     const contentStateWithEntity = contentState.createEntity(
       'LINK',
       'MUTABLE',
-      {url: 'http://www.google.com'}
+      {url}
     );
     const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
     const newEditorState = EditorState.set(editorState, { currentContent: contentStateWithEntity });
@@ -156,14 +170,20 @@ const RichEditor = React.createClass({
   },
 
   renderInsertImgBtn() {
+    const {config: {plugins}} = this.props;
     return (
-      <span onClick={this.handleImgInsert}>插入图片</span>
+      <span onClick={() => plugins.imgUpload(this.handleImgInsert)}>
+        insert image
+      </span>
     );
   },
 
   renderInsertLinkBtn() {
+    const {config: {plugins}} = this.props;
     return (
-      <span onClick={this.handleLinkInsert}>插入链接</span>
+      <span onClick={() => plugins.toggleLink(this.handleLinkToggle)}>
+        insert link
+      </span>
     );
   },
 
