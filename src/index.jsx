@@ -17,7 +17,7 @@ const Root = React.createClass({
   },
 
   handleChange(html) {
-    // console.log(html);
+    console.log(html);
   },
 
   renderConfigPanel() {

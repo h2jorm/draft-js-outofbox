@@ -1,4 +1,5 @@
 import React, {PropTypes} from 'react';
+import {stateToHTML} from '../DraftJsExportHtml/main';
 import {
   AtomicBlockUtils,
   ContentState,
@@ -9,8 +10,6 @@ import {
   convertFromHTML,
 } from '../Draft/Draft';
 import decorator from './decorator';
-// import blockRenderMap from './blockRenderMap';
-// import blockRenderer from './blockRenderer';
 
 import StyleControls from './StyleControls';
 
@@ -34,7 +33,6 @@ const RichEditor = React.createClass({
     let {contentBlocks, entityMap} = convertFromHTML(
       defaultHTML,
     );
-    console.log(entityMap.toArray().map(a => a.toObject()));
     const contentState = ContentState.createFromBlockArray(
       contentBlocks,
       entityMap,
@@ -55,7 +53,7 @@ const RichEditor = React.createClass({
     this.setState({editorState}, () => {
       setTimeout(this.focus, 0);
     });
-    // this.props.onChange(stateToHTML(editorState.getCurrentContent()));
+    this.props.onChange(stateToHTML(editorState.getCurrentContent()));
   },
 
   handleKeyCommand(command) {
@@ -93,12 +91,12 @@ const RichEditor = React.createClass({
         <StyleControls.Block
           editorState={editorState}
           onToggle={this.toggleBlockType}
-          require={['h1', 'h2', 'h3', 'quote', 'ul', 'ol']}
+          require={style}
         />
         <StyleControls.Inline
           editorState={editorState}
           onToggle={this.toggleInlineStyle}
-          require={['i', 'u']}
+          require={style}
         />
         {
           plugins.imgUpload ?
