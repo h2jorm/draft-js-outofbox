@@ -1,6 +1,6 @@
 import React from 'react';
 import {Map} from 'immutable';
-import {DefaultDraftBlockRenderMap} from '../Draft/Draft';
+import {DefaultDraftBlockRenderMap} from './Draft/Draft';
 
 const Image = props => {
   const {src} = props;

@@ -1,5 +1,5 @@
 import React, {PropTypes} from 'react';
-import {stateToHTML} from '../DraftJsExportHtml/main';
+import {stateToHTML} from './DraftJsExportHtml/main';
 import {
   AtomicBlockUtils,
   ContentState,
@@ -8,7 +8,7 @@ import {
   DraftEntityInstance,
   RichUtils,
   convertFromHTML,
-} from '../Draft/Draft';
+} from './Draft/Draft';
 import decorator from './decorator';
 
 import StyleControls from './StyleControls';

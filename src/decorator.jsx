@@ -1,5 +1,5 @@
 import React from 'react';
-import {CompositeDecorator} from '../Draft/Draft';
+import {CompositeDecorator} from './Draft/Draft';
 
 const styles = {};
 

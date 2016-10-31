@@ -4,6 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "clean": "rm -rf lib",
+    "dev": "gulp",
+    "release": "gulp release",
+    "prepublish": "npm run clean && npm run release",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -26,6 +30,8 @@
     "babel-preset-react": "^6.16.0",
     "babel-preset-stage-2": "^6.18.0",
     "browser-sync": "^2.17.5",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^6.1.2",
     "webpack": "^1.13.3",
     "webpack-dev-middleware": "^1.8.4"
   }
