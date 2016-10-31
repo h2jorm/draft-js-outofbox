@@ -1,82 +1,210 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import {Map} from 'immutable';
-import RichEditor from './Editor';
+import React, {PropTypes} from 'react';
+import {stateToHTML} from '../DraftJsExportHtml/main';
+import {
+  AtomicBlockUtils,
+  ContentState,
+  Editor,
+  EditorState,
+  DraftEntityInstance,
+  RichUtils,
+  convertFromHTML,
+} from '../Draft/Draft';
+import decorator from './decorator';
 
-const defaultHTML =
-'<b>Bold text</b>, <i>Italic text</i><br/ ><br />' +
-'<p>hello<a href="http://www.facebook.com">Example link</a></p><br /><br/ >' +
-'<figure><img src="http://cf.dtcj.com/Fp7FCDZpSct1bJgfgkbTYLrHdxq7" height="100" /></figure>';
+import StyleControls from './StyleControls';
 
-const Root = React.createClass({
+const RichEditor = React.createClass({
+  propTypes: {
+    onChange: PropTypes.func.isRequired,
+    defaultHTML: PropTypes.string,
+    config: PropTypes.object.isRequired,
+  },
+
+  defaultProps: {
+    config: {
+      style: [],
+      plugins: {},
+    },
+    onChange: () => {},
+  },
+
   getInitialState() {
+    const {defaultHTML = ''} = this.props;
+    let {contentBlocks, entityMap} = convertFromHTML(
+      defaultHTML,
+    );
+    const contentState = ContentState.createFromBlockArray(
+      contentBlocks,
+      entityMap,
+    );
     return {
-      link: 'http://www.facebook.com',
-      image: 'http://cf.dtcj.com/Fp7FCDZpSct1bJgfgkbTYLrHdxq7',
+      editorState: EditorState.createWithContent(
+        contentState,
+        decorator,
+      ),
     };
   },
 
-  handleChange(html) {
-    console.log(html);
+  focus() {
+    this.refs.editor.focus();
   },
 
-  renderConfigPanel() {
-    const {link, image} = this.state;
+  handleChange(editorState) {
+    this.setState({editorState}, () => {
+      setTimeout(this.focus, 0);
+    });
+    this.props.onChange(stateToHTML(editorState.getCurrentContent()));
+  },
+
+  handleKeyCommand(command) {
+    const newState = RichUtils.handleKeyCommand(this.state.editorState, command);
+    if (newState) {
+      this.handleChange(newState);
+      return 'handled';
+    }
+    return 'not-handled';
+  },
+
+  toggleBlockType(blockType) {
+    this.handleChange(
+      RichUtils.toggleBlockType(
+        this.state.editorState,
+        blockType
+      )
+    );
+  },
+
+  toggleInlineStyle(inlineStyle) {
+    this.handleChange(
+      RichUtils.toggleInlineStyle(
+        this.state.editorState,
+        inlineStyle
+      )
+    );
+  },
+
+  renderToolbar() {
+    const {editorState} = this.state;
+    const {config: {style, plugins}} = this.props;
     return (
-      <div style={{marginBottom: 20}}>
-        <div>
-          <label>link</label>
-          <input value={link} onChange={e => this.setState({'link': e.target.value.trim()})} />
-        </div>
-        <div>
-          <label>image</label>
-          <input value={image} onChange={e => this.setState({'image': e.target.value.trim()})} />
-        </div>
+      <div className="richeditor-toolbar">
+        <StyleControls.Block
+          editorState={editorState}
+          onToggle={this.toggleBlockType}
+          require={style}
+        />
+        <StyleControls.Inline
+          editorState={editorState}
+          onToggle={this.toggleInlineStyle}
+          require={style}
+        />
+        {
+          plugins.imgUpload ?
+          this.renderInsertImgBtn() : null
+        }
+        {
+          plugins.toggleLink ?
+          this.renderInsertLinkBtn() : null
+        }
       </div>
     );
   },
 
-  config() {
-    const {state} = this;
-    return {
-      style: [
-        'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-        'quote', 'ol', 'ul', 'b', 'i', 'u',
-      ],
-      plugins: {
-        imgUpload(next) {
-          Promise.resolve()
-          .then(imgUrl => {
-            next(state.image);
-          });
-        },
-        toggleLink(next) {
-          Promise.resolve()
-          .then(url => {
-            next(state.link);
-          });
-        },
+  handleImgInsert(src) {
+    const {editorState} = this.state;
+    const contentState = editorState.getCurrentContent();
+    const contentStateWithEntity = contentState.createEntity(
+      'IMAGE',
+      'MUTABLE',
+      {
+        src,
       },
-    };
+    );
+
+    const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
+    const newEditorState = EditorState.set(editorState, { currentContent: contentStateWithEntity });
+    this.handleChange(AtomicBlockUtils.insertAtomicBlock(
+      newEditorState,
+      entityKey,
+      ' ',
+    ));
+  },
+
+  handleLinkToggle(...args) {
+    const {editorState} = this.state;
+    const withLink = RichUtils.currentBlockContainsLink(editorState);
+    console.log(withLink);
+    if (withLink)
+      this.removeLink();
+    else
+      this.addLink(...args);
+  },
+
+  addLink(url) {
+    const {editorState} = this.state;
+    const contentState = editorState.getCurrentContent();
+    const contentStateWithEntity = contentState.createEntity(
+      'LINK',
+      'MUTABLE',
+      {url}
+    );
+    const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
+    const newEditorState = EditorState.set(editorState, { currentContent: contentStateWithEntity });
+    this.handleChange(RichUtils.toggleLink(
+      newEditorState,
+      newEditorState.getSelection(),
+      entityKey,
+    ));
+  },
+
+  removeLink() {
+    const {editorState} = this.state;
+    const selection = editorState.getSelection();
+    if (!selection.isCollapsed()) {
+      this.handleChange(
+        RichUtils.toggleLink(editorState, selection, null),
+      );
+    }
+  },
+
+  renderInsertImgBtn() {
+    const {config: {plugins}} = this.props;
+    return (
+      <span onClick={() => plugins.imgUpload(this.handleImgInsert)}>
+        insert image
+      </span>
+    );
+  },
+
+  renderInsertLinkBtn() {
+    const {config: {plugins}} = this.props;
+    return (
+      <span onClick={() => plugins.toggleLink(this.handleLinkToggle)}>
+        insert link
+      </span>
+    );
   },
 
   render() {
+    const {editorState} = this.state;
     return (
-      <div>
+      <div
+        className="richeditor-container ant-input"
+        ref="editorContainer"
+        onClick={() => this.focus()}
+      >
         {
-          this.renderConfigPanel()
+          this.renderToolbar()
         }
-        <RichEditor
-          defaultHTML={defaultHTML}
+        <Editor
+          ref="editor"
+          editorState={editorState}
+          handleKeyCommand={this.handleKeyCommand}
           onChange={this.handleChange}
-          config={this.config()}
         />
       </div>
     );
   }
 });
 
-ReactDOM.render(
-  <Root />,
-  document.getElementById('root')
-);
+export default RichEditor;

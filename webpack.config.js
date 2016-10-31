@@ -8,13 +8,12 @@ const isProd = NODE_ENV === 'production';
 
 module.exports = {
   entry: {
-    main: './src/index.jsx',
+    main: './demo/index.jsx',
     vendor: [
       'babel-polyfill',
       'react',
       'react-dom',
       'immutable',
-      // 'draft-js',
     ],
   },
   output: {
