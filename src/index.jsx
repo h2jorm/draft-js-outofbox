@@ -9,11 +9,12 @@ import {
   RichUtils,
   convertFromHTML,
 } from './Draft/Draft';
+import * as Icons from './Icons';
 import decorator from './decorator';
 
 import StyleControls from './StyleControls';
 
-const RichEditor = React.createClass({
+const DraftJsOutOfBox = React.createClass({
   propTypes: {
     onChange: PropTypes.func.isRequired,
     defaultHTML: PropTypes.string,
@@ -87,7 +88,7 @@ const RichEditor = React.createClass({
     const {editorState} = this.state;
     const {config: {style, plugins}} = this.props;
     return (
-      <div className="richeditor-toolbar">
+      <div className="draft-js-outofbox-toolbar">
         <StyleControls.Block
           editorState={editorState}
           onToggle={this.toggleBlockType}
@@ -170,8 +171,8 @@ const RichEditor = React.createClass({
   renderInsertImgBtn() {
     const {config: {plugins}} = this.props;
     return (
-      <span onClick={() => plugins.imgUpload(this.handleImgInsert)}>
-        insert image
+      <span className="draft-js-outofbox-toolicon" onClick={() => plugins.imgUpload(this.handleImgInsert)}>
+        <Icons.Image />
       </span>
     );
   },
@@ -179,8 +180,8 @@ const RichEditor = React.createClass({
   renderInsertLinkBtn() {
     const {config: {plugins}} = this.props;
     return (
-      <span onClick={() => plugins.toggleLink(this.handleLinkToggle)}>
-        insert link
+      <span className="draft-js-outofbox-toolicon" onClick={() => plugins.toggleLink(this.handleLinkToggle)}>
+        <Icons.Link />
       </span>
     );
   },
@@ -189,7 +190,7 @@ const RichEditor = React.createClass({
     const {editorState} = this.state;
     return (
       <div
-        className="richeditor-container ant-input"
+        className="draft-js-outofbox"
         ref="editorContainer"
         onClick={() => this.focus()}
       >
@@ -207,4 +208,4 @@ const RichEditor = React.createClass({
   }
 });
 
-export default RichEditor;
+export default DraftJsOutOfBox;

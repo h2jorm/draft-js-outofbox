@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "clean": "rm -rf lib",
+    "clean": "rm -rf lib && rm -rf src/Icons/*.js src/Icons/*.jsx",
     "dev": "gulp",
+    "icon": "gulp icon",
     "release": "gulp release",
     "prepublish": "npm run clean && npm run release",
     "test": "echo \"Error: no test specified\" && exit 1"

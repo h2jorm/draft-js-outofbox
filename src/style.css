@@ -1,0 +1,19 @@
+.draft-js-outofbox svg path {
+  fill: #999;
+}
+
+.draft-js-outofbox-controls,
+.draft-js-outofbox-toolicon {
+  display: inline-block;
+  text-align: center;
+}
+
+.draft-js-outofbox-toolicon {
+  width: 24px;
+  cursor: pointer;
+}
+
+.draft-js-outofbox-toolicon.draft-js-outofbox-active svg path,
+.draft-js-outofbox-toolicon:hover svg path {
+  fill: #5890ff;
+}
