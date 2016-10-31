@@ -10,14 +10,18 @@ const defaultHTML =
 
 const Root = React.createClass({
   getInitialState() {
+    setTimeout(() => {
+      this.setState({value: defaultHTML});
+    }, 1000);
     return {
+      value: '',
       link: 'http://www.facebook.com',
       image: 'http://cf.dtcj.com/Fp7FCDZpSct1bJgfgkbTYLrHdxq7',
     };
   },
 
   handleChange(html) {
-    console.log(html);
+    this.setState({value: html});
   },
 
   renderConfigPanel() {
@@ -67,7 +71,7 @@ const Root = React.createClass({
           this.renderConfigPanel()
         }
         <RichEditor
-          defaultHTML={defaultHTML}
+          value={this.state.value}
           onChange={this.handleChange}
           config={this.config()}
         />

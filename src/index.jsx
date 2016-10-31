@@ -17,11 +17,12 @@ import StyleControls from './StyleControls';
 const DraftJsOutOfBox = React.createClass({
   propTypes: {
     onChange: PropTypes.func.isRequired,
-    defaultHTML: PropTypes.string,
+    value: PropTypes.string,
     config: PropTypes.object.isRequired,
   },
 
   defaultProps: {
+    value: '',
     config: {
       style: [],
       plugins: {},
@@ -30,20 +31,47 @@ const DraftJsOutOfBox = React.createClass({
   },
 
   getInitialState() {
-    const {defaultHTML = ''} = this.props;
+    return {
+      editorState: this.htmlToEditorState(this.props.value),
+    };
+  },
+
+  componentWillReceiveProps(nextProps) {
+    // prevent editor from re-rendering
+    if (nextProps.value === this.lastRecord) {
+      return;
+    }
+    this.setState({
+      editorState: this.htmlToEditorState(nextProps.value),
+    });
+  },
+
+  // component update only in two cases
+  shouldComponentUpdate(nextProps, nextState) {
+    // case1: when initializing editor especially if loading remote data
+    if (nextProps.value !== this.lastRecord) {
+      return true;
+    }
+    // case2: update editorState
+    if (nextState.editorState !== this.state.editorState) {
+      return true;
+    }
+    // otherwise: prevent from updating
+    return false;
+  },
+
+  htmlToEditorState(html) {
     let {contentBlocks, entityMap} = convertFromHTML(
-      defaultHTML,
+      html,
     );
     const contentState = ContentState.createFromBlockArray(
       contentBlocks,
       entityMap,
     );
-    return {
-      editorState: EditorState.createWithContent(
-        contentState,
-        decorator,
-      ),
-    };
+    return EditorState.createWithContent(
+      contentState,
+      decorator,
+    );
   },
 
   focus() {
@@ -54,7 +82,9 @@ const DraftJsOutOfBox = React.createClass({
     this.setState({editorState}, () => {
       setTimeout(this.focus, 0);
     });
-    this.props.onChange(stateToHTML(editorState.getCurrentContent()));
+    // prevent editor from re-rendering
+    this.lastRecord = stateToHTML(editorState.getCurrentContent());
+    this.props.onChange(this.lastRecord);
   },
 
   handleKeyCommand(command) {
