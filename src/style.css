@@ -1,5 +1,18 @@
+.draft-js-outofbox {
+  line-height: 1.8;
+}
+
 .draft-js-outofbox svg path {
   fill: #999;
+}
+
+.draft-js-outofbox .DraftEditor-root {
+  padding: 8px;
+  border: 1px solid #999;
+}
+
+.draft-js-outofbox .DraftEditor-editorContainer {
+  min-height: 300px;
 }
 
 .draft-js-outofbox-controls,
@@ -9,7 +22,7 @@
 }
 
 .draft-js-outofbox-toolicon {
-  width: 24px;
+  width: 32px;
   cursor: pointer;
 }
 

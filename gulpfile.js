@@ -40,11 +40,16 @@ gulp.task('dev', () => {
   });
 });
 
-gulp.task('release:copy', () => {
+gulp.task('release:copyJs', () => {
   return gulp.src([
     'src/Draft/*.js',
   ])
   .pipe(gulp.dest('lib/Draft'));
+});
+
+gulp.task('release:copyCss', () => {
+  return gulp.src('src/style.css')
+  .pipe(gulp.dest('lib'));
 });
 
 class Svg2ReactComp extends Stream.Transform {
@@ -100,7 +105,7 @@ gulp.task('icon', () => {
   });
 });
 
-gulp.task('release', ['release:copy', 'icon'], () => {
+gulp.task('release', ['release:copyJs', 'release:copyCss', 'icon'], () => {
   return gulp.src([
     'src/*.jsx',
     'src/**/*.js',
