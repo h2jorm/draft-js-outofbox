@@ -166,9 +166,11 @@ const DraftJsOutOfBox = React.createClass({
       return null;
     }
     const contentState = editorState.getCurrentContent();
-    const block = contentState.getBlockForKey(selection.getStartKey());
+    const startKey = selection.getStartKey();
+    const startOffset = selection.getStartOffset();
+    const block = contentState.getBlockForKey(startKey);
     // if there is only text, entityKey will be `null`
-    const entityKey = block.getEntityAt(0);
+    const entityKey = block.getEntityAt(startOffset);
     let url = null;
     if (entityKey) {
       const entity = contentState.getEntity(entityKey);
