@@ -62,7 +62,7 @@ const DraftJsOutOfBox = React.createClass({
 
   htmlToEditorState(html) {
     let {contentBlocks, entityMap} = convertFromHTML(
-      html,
+      html || '',
     );
     const contentState = ContentState.createFromBlockArray(
       contentBlocks,
@@ -79,9 +79,7 @@ const DraftJsOutOfBox = React.createClass({
   },
 
   handleChange(editorState) {
-    this.setState({editorState}, () => {
-      setTimeout(this.focus, 0);
-    });
+    this.setState({editorState});
     // prevent editor from re-rendering
     this.lastRecord = stateToHTML(editorState.getCurrentContent());
     this.props.onChange(this.lastRecord);
@@ -161,14 +159,42 @@ const DraftJsOutOfBox = React.createClass({
     ));
   },
 
-  handleLinkToggle(...args) {
+  getMaybeHref() {
     const {editorState} = this.state;
-    const withLink = RichUtils.currentBlockContainsLink(editorState);
-    console.log(withLink);
-    if (withLink)
-      this.removeLink();
-    else
-      this.addLink(...args);
+    const selection = editorState.getSelection();
+    if (selection.isCollapsed()) {
+      return null;
+    }
+    const contentState = editorState.getCurrentContent();
+    const block = contentState.getBlockForKey(selection.getStartKey());
+    // if there is only text, entityKey will be `null`
+    const entityKey = block.getEntityAt(0);
+    let url = null;
+    if (entityKey) {
+      const entity = contentState.getEntity(entityKey);
+      const entityData = entity.getData();
+      url = entityData && entityData.url || null;
+    }
+    return url;
+  },
+
+  handleLinkToggle(before) {
+    const that = this;
+    const maybeHref = this.getMaybeHref();
+    if (typeof before === 'function') {
+      before(maybeHref);
+    }
+    return function after(link) {
+      that.focus();
+      // wait focus
+      setTimeout(() => {
+        if (!link) {
+          that.removeLink();
+        } else {
+          that.addLink(link);
+        }
+      }, 0);
+    };
   },
 
   addLink(url) {
@@ -210,7 +236,10 @@ const DraftJsOutOfBox = React.createClass({
   renderInsertLinkBtn() {
     const {config: {plugins}} = this.props;
     return (
-      <span className="draft-js-outofbox-toolicon" onClick={() => plugins.toggleLink(this.handleLinkToggle)}>
+      <span
+        className="draft-js-outofbox-toolicon"
+        onClick={() => plugins.toggleLink(this.handleLinkToggle)}
+      >
         <Icons.Link />
       </span>
     );

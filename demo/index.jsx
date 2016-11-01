@@ -55,10 +55,9 @@ const Root = React.createClass({
           });
         },
         toggleLink(next) {
-          Promise.resolve()
-          .then(url => {
-            next(state.link);
-          });
+          next(function (href) {
+            // no op
+          })(state.link);
         },
       },
     };
