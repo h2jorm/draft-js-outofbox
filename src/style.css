@@ -30,3 +30,12 @@
 .draft-js-outofbox-toolicon:hover svg path {
   fill: #5890ff;
 }
+
+.draft-js-outofbox .DraftEditor-editorContainer a {
+  text-decoration: underline;
+}
+
+.draft-js-outofbox .DraftEditor-editorContainer blockquote {
+  border-left: .25rem solid #d9d9d9;
+  padding-left: 1rem;
+}
