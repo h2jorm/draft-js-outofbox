@@ -62,6 +62,7 @@ module.exports = Map({
     wrapper: PRE_WRAP
   },
   'unstyled': {
-    element: 'div'
+    element: 'div',
+    inputTags: ['div', 'p']
   }
 });

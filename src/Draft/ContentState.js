@@ -152,7 +152,7 @@ var ContentState = function (_ContentStateRecord) {
 
   ContentState.createFromBlockArray = function createFromBlockArray(blocks, entityMap) {
     var blockMap = BlockMapBuilder.createFromArray(blocks);
-    var selectionState = SelectionState.createEmpty(blockMap.first().getKey());
+    var selectionState = blockMap.isEmpty() ? new SelectionState() : SelectionState.createEmpty(blockMap.first().getKey());
     return new ContentState({
       blockMap: blockMap,
       entityMap: entityMap || OrderedMap(),

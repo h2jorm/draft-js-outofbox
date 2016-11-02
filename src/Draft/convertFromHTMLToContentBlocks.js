@@ -119,13 +119,20 @@ function getListBlockType(tag, lastList) {
   return null;
 }
 
+function getInputTags(config) {
+  if (config.inputTags) {
+    return config.inputTags;
+  } else if (config.element) {
+    return [config.element];
+  } else {
+    return [];
+  }
+}
+
 function getBlockMapSupportedTags(blockRenderMap) {
-  var unstyledElement = blockRenderMap.get('unstyled').element;
-  return blockRenderMap.map(function (config) {
-    return config.element;
-  }).valueSeq().toSet().filter(function (tag) {
-    return tag && tag !== unstyledElement;
-  }).toArray().sort();
+  return blockRenderMap.valueSeq().flatMap(function (config) {
+    return getInputTags(config);
+  }).toSet().toArray().sort();
 }
 
 // custom element conversions
@@ -141,7 +148,7 @@ function getMultiMatchedType(tag, lastList, multiMatchExtractor) {
 
 function getBlockTypeForTag(tag, lastList, blockRenderMap) {
   var matchedTypes = blockRenderMap.filter(function (config) {
-    return config.element === tag || config.wrapper === tag;
+    return getInputTags(config).includes(tag) || config.wrapper === tag;
   }).keySeq().toSet().toArray().sort();
 
   // if we dont have any matched type, return unstyled

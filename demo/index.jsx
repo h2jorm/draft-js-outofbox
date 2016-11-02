@@ -4,8 +4,8 @@ import {Map} from 'immutable';
 import RichEditor from '../src';
 
 const defaultHTML =
-'<b>Bold text</b>, <i>Italic text</i><br/ ><br />' +
-'<p>hello<a href="http://www.facebook.com">Example link</a></p><br /><br/ >' +
+'<p><b>Bold text</b>, <i>Italic text</i></p>' +
+'<p>hello<a href="http://www.facebook.com">Example link</a></p>' +
 '<figure><img src="http://cf.dtcj.com/Fp7FCDZpSct1bJgfgkbTYLrHdxq7" height="100" /></figure>';
 
 const Root = React.createClass({
