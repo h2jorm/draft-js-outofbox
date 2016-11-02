@@ -1,0 +1,5 @@
+*.log
+/src
+/demo
+gulpfile.js
+webpack.config.js
