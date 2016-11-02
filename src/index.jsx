@@ -41,9 +41,7 @@ const DraftJsOutOfBox = React.createClass({
     if (nextProps.value === this.lastRecord) {
       return;
     }
-    this.setState({
-      editorState: this.htmlToEditorState(nextProps.value),
-    });
+    this.handleChange(this.htmlToEditorState(nextProps.value));
   },
 
   // component update only in two cases
