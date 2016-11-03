@@ -85,9 +85,17 @@ var RichTextEditorUtil = {
     var content = editorState.getCurrentContent();
     var startKey = selection.getStartKey();
     var blockBefore = content.getBlockBefore(startKey);
+    var isAtomic = [blockBefore && blockBefore.getType() === 'atomic', this.getCurrentBlockType(editorState) === 'atomic'];
 
-    if (blockBefore && blockBefore.getType() === 'atomic') {
-      var blockMap = content.getBlockMap()['delete'](blockBefore.getKey());
+    if (isAtomic.includes(true)) {
+      var key1 = blockBefore.getKey();
+      var key2 = startKey;
+      var keys = [key1, key2];
+      if (!isAtomic[0]) {
+        keys.reverse();
+      }
+      var blockMap = content.getBlockMap()['delete'](keys[0]);
+      var selection = SelectionState.createEmpty(keys[1]);
       var withoutAtomicBlock = content.merge({ blockMap: blockMap, selectionAfter: selection });
       if (withoutAtomicBlock !== content) {
         return EditorState.push(editorState, withoutAtomicBlock, 'remove-range');
